@@ -1,0 +1,12 @@
+@import './base.css';
+
+html,
+body,
+#app {
+  height: 100%;
+}
+
+body {
+  overflow: hidden;
+  user-select: none;
+}
