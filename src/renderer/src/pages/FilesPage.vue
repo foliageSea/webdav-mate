@@ -198,94 +198,112 @@ onMounted(async () => {
     <div class="h-full flex flex-col">
       <div class="px-3 pt-3 sm:px-4 sm:pt-4">
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div class="min-w-0">
-            <div class="text-[16px] font-700 text-white/90">文件浏览</div>
-            <div class="mt-1 break-all text-[12px] text-white/55">
-              {{ currentName }} · {{ path }}
+          <div class="min-w-0 space-y-2">
+            <div class="flex flex-wrap items-center gap-2">
+              <div class="text-[18px] font-700 leading-none tracking-[0.01em] text-white/95">
+                文件浏览
+              </div>
+              <div
+                class="max-w-full truncate rounded-full border border-white/15 bg-white/5 px-2 py-0.5 text-[11px] text-white/75"
+              >
+                {{ currentName }}
+              </div>
+            </div>
+            <div
+              class="flex items-center rounded-md border border-white/10 bg-white/[0.03] px-2.5 py-1.5 text-[12px] text-white/65"
+            >
+              <span class="mr-1 shrink-0 text-white/45">路径</span>
+              <span class="min-w-0 break-all leading-5">{{ path }}</span>
             </div>
           </div>
-          <div class="flex flex-wrap items-center gap-2 sm:justify-end">
+          <div class="flex w-full flex-col gap-2 sm:w-auto sm:items-end">
             <NSelect
-              class="w-full sm:w-[240px]"
+              class="w-full sm:w-[260px]"
               size="small"
               :options="serverOptions"
               :value="serverId"
               @update:value="(v) => (serverId = v)"
             />
-            <NButton
-              class="flex-1 min-w-[112px] sm:flex-none"
-              size="small"
-              secondary
-              :disabled="!serverId"
-              @click="uploadFiles"
-            >
-              <template #icon>
-                <NIcon><Upload /></NIcon>
-              </template>
-              上传文件</NButton
-            >
-            <NButton
-              class="flex-1 min-w-[112px] sm:flex-none"
-              size="small"
-              secondary
-              :disabled="!serverId"
-              @click="uploadFolder"
-            >
-              <template #icon>
-                <NIcon><Upload /></NIcon>
-              </template>
-              上传文件夹</NButton
-            >
-            <NButton
-              class="flex-1 min-w-[112px] sm:flex-none"
-              size="small"
-              secondary
-              :disabled="!serverId || selected.size === 0"
-              @click="downloadSelected"
-            >
-              <template #icon>
-                <NIcon><Download /></NIcon>
-              </template>
-              下载所选
-            </NButton>
-            <NButton
-              class="flex-1 min-w-[112px] sm:flex-none"
-              size="small"
-              secondary
-              type="error"
-              :disabled="!serverId || selected.size === 0"
-              @click="deleteSelected"
-            >
-              <template #icon>
-                <NIcon><TrashCan /></NIcon>
-              </template>
-              删除所选
-            </NButton>
-            <NButton
-              class="flex-1 min-w-[112px] sm:flex-none"
-              size="small"
-              secondary
-              :disabled="!serverId"
-              @click="goUp"
-            >
-              <template #icon>
-                <NIcon><ArrowUp /></NIcon>
-              </template>
-              上一级
-            </NButton>
-            <NButton
-              class="flex-1 min-w-[112px] sm:flex-none"
-              size="small"
-              secondary
-              :loading="loading"
-              :disabled="!serverId"
-              @click="refresh"
-            >
-              <template #icon>
-                <NIcon><Renew /></NIcon>
-              </template>
-              刷新
-            </NButton>
+
+            <div class="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:justify-end">
+              <NButton
+                class="flex-1 min-w-[112px] sm:flex-none"
+                size="small"
+                secondary
+                :disabled="!serverId"
+                @click="uploadFiles"
+              >
+                <template #icon>
+                  <NIcon><Upload /></NIcon>
+                </template>
+                上传文件</NButton
+              >
+              <NButton
+                class="flex-1 min-w-[112px] sm:flex-none"
+                size="small"
+                secondary
+                :disabled="!serverId"
+                @click="uploadFolder"
+              >
+                <template #icon>
+                  <NIcon><Upload /></NIcon>
+                </template>
+                上传文件夹</NButton
+              >
+              <NButton
+                class="flex-1 min-w-[112px] sm:flex-none"
+                size="small"
+                secondary
+                :loading="loading"
+                :disabled="!serverId"
+                @click="refresh"
+              >
+                <template #icon>
+                  <NIcon><Renew /></NIcon>
+                </template>
+                刷新
+              </NButton>
+            </div>
+
+            <div class="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:justify-end">
+              <NButton
+                class="flex-1 min-w-[112px] sm:flex-none"
+                size="small"
+                secondary
+                :disabled="!serverId"
+                @click="goUp"
+              >
+                <template #icon>
+                  <NIcon><ArrowUp /></NIcon>
+                </template>
+                上一级
+              </NButton>
+              <NButton
+                class="flex-1 min-w-[112px] sm:flex-none"
+                size="small"
+                secondary
+                :disabled="!serverId || selected.size === 0"
+                @click="downloadSelected"
+              >
+                <template #icon>
+                  <NIcon><Download /></NIcon>
+                </template>
+                下载所选
+              </NButton>
+              <NButton
+                class="flex-1 min-w-[112px] sm:flex-none"
+                size="small"
+                secondary
+                type="error"
+                :disabled="!serverId || selected.size === 0"
+                @click="deleteSelected"
+              >
+                <template #icon>
+                  <NIcon><TrashCan /></NIcon>
+                </template>
+                删除所选
+              </NButton>
+            </div>
           </div>
         </div>
 

@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
-import { NButton, NModal, NSpin } from 'naive-ui'
+import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
+import { NButton, NModal, NSpin, NImage } from 'naive-ui'
+import Player from 'xgplayer'
+import 'xgplayer/dist/index.min.css'
 import type { RemoteEntry } from '@shared/ipc'
 
 const props = defineProps<{
@@ -17,6 +19,8 @@ const emit = defineEmits<{
 
 const localUrl = ref<string | null>(null)
 const loading = ref(false)
+const videoContainerRef = ref<HTMLElement | null>(null)
+const videoPlayer = ref<Player | null>(null)
 
 const IMAGE_EXT_RE = /\.(avif|bmp|gif|ico|jpe?g|png|svg|tiff?|webp|heic|heif)$/i
 const VIDEO_EXT_RE = /\.(mp4|webm|ogg|mov|m4v|mkv|avi|wmv|flv|ts|m2ts)$/i
@@ -60,10 +64,14 @@ const load = async (): Promise<void> => {
   loading.value = true
   try {
     localUrl.value = await window.api.preview.getOnlineUrl(props.serverId, props.remotePath)
-    console.log(localUrl.value)
   } finally {
     loading.value = false
   }
+}
+
+const destroyPlayer = (): void => {
+  videoPlayer.value?.destroy()
+  videoPlayer.value = null
 }
 
 watch(
@@ -73,6 +81,27 @@ watch(
   },
   { immediate: true }
 )
+
+watch(
+  [() => props.show, isVideo, localUrl],
+  async ([show, videoLike, url]) => {
+    destroyPlayer()
+    if (!show || !videoLike || !url) return
+    await nextTick()
+    if (!videoContainerRef.value) return
+    videoPlayer.value = new Player({
+      el: videoContainerRef.value,
+      url,
+      fluid: true,
+      videoFillMode: 'contain'
+    })
+  },
+  { flush: 'post' }
+)
+
+onBeforeUnmount(() => {
+  destroyPlayer()
+})
 
 const close = (): void => emit('update:show', false)
 
@@ -95,15 +124,14 @@ const goNext = (): void => {
   <NModal
     :show="show"
     preset="card"
-    style="width: min(980px, calc(100vw - 32px)); height: min(720px, calc(100vh - 32px))"
+    style="width: min(980px, calc(100vw - 32px)); height: 720px; max-height: calc(100vh - 32px)"
     :mask-closable="true"
     @update:show="(v) => emit('update:show', v)"
   >
     <template #header>
       {{ current?.name ?? '预览' }}
-
     </template>
-    <div class="h-full flex flex-col">
+    <div class="h-full min-h-0 flex flex-col overflow-hidden">
       <div class="flex items-start justify-between gap-3">
         <div class="min-w-0">
           <!-- <div class="text-[14px] font-700 text-white/90 truncate">
@@ -125,22 +153,32 @@ const goNext = (): void => {
         </div>
       </div>
 
-      <div class="flex-1 mt-3 rounded-[10px] bg-black/30 border border-white/10 overflow-hidden">
+      <div
+        class="flex-1 min-h-0 mt-3 rounded-[10px] bg-black/30 border border-white/10 overflow-hidden"
+      >
         <div v-if="loading" class="h-full flex items-center justify-center">
           <NSpin size="large" />
         </div>
 
-        <div v-else class="h-full">
-          <img
+        <div v-else class="h-full w-full overflow-hidden">
+          <NImage
             v-if="isImage && localUrl"
             :src="localUrl"
-            class="w-full h-full object-contain"
+            class="img"
             draggable="false"
           />
-          <video v-else-if="isVideo && localUrl" :src="localUrl" class="w-full h-full" controls />
+          <div v-else-if="isVideo && localUrl" ref="videoContainerRef" class="w-full h-full" />
           <div v-else class="h-full flex items-center justify-center text-white/50">不支持预览</div>
         </div>
       </div>
     </div>
   </NModal>
 </template>
+
+<style scoped>
+:deep(.xgplayer) {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+</style>
