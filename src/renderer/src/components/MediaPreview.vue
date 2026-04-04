@@ -18,12 +18,27 @@ const emit = defineEmits<{
 const localUrl = ref<string | null>(null)
 const loading = ref(false)
 
+const IMAGE_EXT_RE = /\.(avif|bmp|gif|ico|jpe?g|png|svg|tiff?|webp|heic|heif)$/i
+const VIDEO_EXT_RE = /\.(mp4|webm|ogg|mov|m4v|mkv|avi|wmv|flv|ts|m2ts)$/i
+
+type MediaLike = Pick<RemoteEntry, 'contentType' | 'name' | 'path'> | null | undefined
+
+const isImageLike = (entry: MediaLike): boolean => {
+  if (!entry) return false
+  if (entry.contentType?.startsWith('image/')) return true
+  const target = entry.name || entry.path || ''
+  return IMAGE_EXT_RE.test(target)
+}
+
+const isVideoLike = (entry: MediaLike): boolean => {
+  if (!entry) return false
+  if (entry.contentType?.startsWith('video/')) return true
+  const target = entry.name || entry.path || ''
+  return VIDEO_EXT_RE.test(target)
+}
+
 const mediaEntries = computed(() =>
-  props.entries.filter(
-    (e) =>
-      (e.contentType?.startsWith('image/') || e.contentType?.startsWith('video/')) &&
-      e.kind === 'file'
-  )
+  props.entries.filter((e) => (isImageLike(e) || isVideoLike(e)) && e.kind === 'file')
 )
 
 const index = computed(() => {
@@ -36,16 +51,16 @@ const current = computed(() => {
   return props.entries.find((e) => e.path === props.remotePath) ?? null
 })
 
-const isImage = computed(() => current.value?.contentType?.startsWith('image/') ?? false)
-const isVideo = computed(() => current.value?.contentType?.startsWith('video/') ?? false)
+const isImage = computed(() => isImageLike(current.value))
+const isVideo = computed(() => isVideoLike(current.value))
 
 const load = async (): Promise<void> => {
   localUrl.value = null
   if (!props.show || !props.serverId || !props.remotePath) return
   loading.value = true
   try {
-    const localPath = await window.api.preview.getLocalPath(props.serverId, props.remotePath)
-    localUrl.value = window.api.utils.filePathToUrl(localPath)
+    localUrl.value = await window.api.preview.getOnlineUrl(props.serverId, props.remotePath)
+    console.log(localUrl.value)
   } finally {
     loading.value = false
   }

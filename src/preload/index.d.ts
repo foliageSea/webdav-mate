@@ -45,9 +45,13 @@ type RendererApi = {
   }
   preview: {
     getLocalPath(serverId: string, remotePath: string): Promise<string>
+    getDataUrl(serverId: string, remotePath: string): Promise<string>
+    getOnlineUrl(serverId: string, remotePath: string): Promise<string>
   }
   utils: {
     filePathToUrl(p: string): string
+    remotePathToUrl(serverId: string, remotePath: string): Promise<string>
+    remotePathToPreviewUrl(serverId: string, remotePath: string): Promise<string>
   }
 }
 

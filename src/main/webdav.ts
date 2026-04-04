@@ -10,7 +10,7 @@ import type { RemoteEntry } from '@shared/ipc'
 import { getConnectionSecret } from './store'
 
 type WebDavClientCompat = {
-  getDirectoryContents(path: string, options?: { details?: boolean }): Promise<unknown>
+  getDirectoryContents(path: string, options?: { details?: boolean }): Promise<{ data: unknown }>
   exists(path: string): Promise<boolean>
   createDirectory(path: string): Promise<void>
   deleteFile(path: string): Promise<void>
@@ -57,7 +57,9 @@ export const listDirectory = async (serverId: string, p: string): Promise<Remote
   }) as unknown as WebDavClientCompat
 
   const remotePath = joinRemote(conn.basePath, p)
-  const raw = await client.getDirectoryContents(remotePath, { details: true })
+  const response = await client.getDirectoryContents(remotePath, { details: true })
+  const raw: unknown = response.data
+
   type DirItem = { filename: string; type: string; size?: number; lastmod?: string }
   const items = (Array.isArray(raw) ? raw : []) as DirItem[]
 

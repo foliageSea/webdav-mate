@@ -33,6 +33,8 @@ const load = async (): Promise<void> => {
   try {
     connections.value = await window.api.connections.list()
     currentId.value = await window.api.connections.getCurrentId()
+  } catch (e) {
+    message.error(String(e))
   } finally {
     loading.value = false
   }
@@ -44,20 +46,33 @@ const openCreate = (): void => {
 }
 
 const openEdit = async (id: string): Promise<void> => {
-  const conn = await window.api.connections.getById(id)
-  editor.value = {
-    id: conn.id,
-    name: conn.name,
-    serverUrl: conn.serverUrl,
-    username: conn.username,
-    password: '',
-    basePath: conn.basePath ?? ''
+  try {
+    const conn = await window.api.connections.getById(id)
+    editor.value = {
+      id: conn.id,
+      name: conn.name,
+      serverUrl: conn.serverUrl,
+      username: conn.username,
+      password: '',
+      basePath: conn.basePath ?? ''
+    }
+    showEditor.value = true
+  } catch (e) {
+    message.error(String(e))
   }
-  showEditor.value = true
 }
 
 const save = async (): Promise<void> => {
-  const input = editor.value
+  if (loading.value) return
+  const draft = editor.value
+  const input: WebDavConnectionUpsertInput = {
+    id: draft.id,
+    name: draft.name.trim(),
+    serverUrl: draft.serverUrl.trim(),
+    username: draft.username.trim(),
+    password: draft.password,
+    basePath: draft.basePath?.trim() ?? ''
+  }
   if (!input.name || !input.serverUrl || !input.username) {
     message.error('请填写名称、URL、用户名')
     return
@@ -66,10 +81,17 @@ const save = async (): Promise<void> => {
     message.error('新增连接需要填写密码')
     return
   }
-  await window.api.connections.upsert(input)
-  showEditor.value = false
-  await load()
-  message.success('已保存')
+  loading.value = true
+  try {
+    await window.api.connections.upsert(input)
+    showEditor.value = false
+    await load()
+    message.success('已保存')
+  } catch (e) {
+    message.error(String(e))
+  } finally {
+    loading.value = false
+  }
 }
 
 const testConn = async (id: string): Promise<void> => {
@@ -190,8 +212,8 @@ onMounted(() => {
 
       <template #footer>
         <div class="flex justify-end gap-2">
-          <NButton secondary @click="showEditor = false">取消</NButton>
-          <NButton type="primary" @click="save">保存</NButton>
+          <NButton secondary :disabled="loading" @click="showEditor = false">取消</NButton>
+          <NButton type="primary" :loading="loading" @click="save">保存</NButton>
         </div>
       </template>
     </NModal>

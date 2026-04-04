@@ -33,6 +33,7 @@ const refresh = async (): Promise<void> => {
   loading.value = true
   try {
     entries.value = await window.api.files.list(serverId.value, path.value)
+    console.log(serverId.value, path.value,entries.value)
   } catch (e) {
     message.error(String(e))
   } finally {
@@ -41,15 +42,31 @@ const refresh = async (): Promise<void> => {
 }
 
 const loadConnections = async (): Promise<void> => {
-  connections.value = await window.api.connections.list()
-  const current = await window.api.connections.getCurrentId()
-  const rid = (route.params.serverId as string | undefined) ?? null
-  serverId.value = rid ?? current ?? null
-  if (!serverId.value) {
-    router.replace('/servers')
-    return
+  try {
+    connections.value = await window.api.connections.list()
+    const current = await window.api.connections.getCurrentId()
+    const rid = (route.params.serverId as string | undefined) ?? null
+
+    const preferred = rid ?? current ?? null
+    const exists = (id: string | null): id is string =>
+      !!id && connections.value.some((c) => c.id === id)
+
+    if (exists(preferred)) {
+      serverId.value = preferred
+    } else {
+      serverId.value = connections.value[0]?.id ?? null
+      if (preferred) message.warning('连接不存在，已切换到其他连接')
+    }
+
+    if (!serverId.value) {
+      message.info('请先在“连接管理”新增一个连接')
+      return
+    }
+
+    if (rid !== serverId.value) router.replace(`/files/${serverId.value}`)
+  } catch (e) {
+    message.error(String(e))
   }
-  if (!rid) router.replace(`/files/${serverId.value}`)
 }
 
 const activateEntry = async (entry: RemoteEntry): Promise<void> => {
@@ -172,10 +189,6 @@ watch(serverId, async (id) => {
 
 onMounted(async () => {
   await loadConnections()
-  if (!serverId.value) return
-  const last = await window.api.connections.getLastPath(serverId.value)
-  path.value = last ?? '/'
-  await refresh()
 })
 </script>
 
@@ -242,7 +255,14 @@ onMounted(async () => {
           :bordered="true"
           content-style="height: 100%"
         >
+          <div v-if="!serverId" class="h-full flex items-center justify-center">
+            <div class="text-center">
+              <div class="text-[13px] text-white/70">请先在“连接管理”新增一个连接</div>
+              <NButton class="mt-3" type="primary" @click="router.push('/servers')">去新增</NButton>
+            </div>
+          </div>
           <FileGrid
+            v-else
             :entries="entries"
             :selected="selected"
             :loading="loading"

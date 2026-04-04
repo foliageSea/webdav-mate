@@ -1,6 +1,7 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import type { IpcRendererEvent } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
+import * as pathPosix from 'path/posix'
 import { pathToFileURL } from 'url'
 import type {
   EnqueueDownloadInput,
@@ -12,6 +13,37 @@ import type {
 } from '@shared/ipc'
 
 type TestResult = { ok: boolean; message: string }
+
+const cleanBasePath = (p: string | undefined): string => {
+  if (!p) return ''
+  const trimmed = p.trim()
+  if (!trimmed || trimmed === '/') return ''
+  return '/' + trimmed.replace(/^\/+/, '').replace(/\/+$/, '')
+}
+
+const cleanPath = (p: string): string => {
+  const trimmed = (p || '/').trim()
+  if (!trimmed || trimmed === '/') return '/'
+  return '/' + trimmed.replace(/^\/+/, '').replace(/\/+$/, '')
+}
+
+const joinRemote = (basePath: string | undefined, p: string): string => {
+  const rel = cleanPath(p)
+  const joined = pathPosix.join(cleanBasePath(basePath) || '/', rel)
+  return joined.startsWith('/') ? joined : '/' + joined
+}
+
+const buildWebDavUrl = (
+  serverUrl: string,
+  basePath: string | undefined,
+  remotePath: string
+): string => {
+  const url = new URL(serverUrl)
+  const serverPath = (url.pathname || '/').replace(/\/+$/, '') || '/'
+  const remote = joinRemote(basePath, remotePath).replace(/^\/+/, '')
+  url.pathname = pathPosix.join(serverPath, remote)
+  return url.toString()
+}
 
 type RendererApi = {
   connections: {
@@ -48,9 +80,13 @@ type RendererApi = {
   }
   preview: {
     getLocalPath(serverId: string, remotePath: string): Promise<string>
+    getDataUrl(serverId: string, remotePath: string): Promise<string>
+    getOnlineUrl(serverId: string, remotePath: string): Promise<string>
   }
   utils: {
     filePathToUrl(p: string): string
+    remotePathToUrl(serverId: string, remotePath: string): Promise<string>
+    remotePathToPreviewUrl(serverId: string, remotePath: string): Promise<string>
   }
 }
 
@@ -99,10 +135,28 @@ const api: RendererApi = {
   },
   preview: {
     getLocalPath: (serverId, remotePath) =>
-      ipcRenderer.invoke('preview:getLocalPath', serverId, remotePath)
+      ipcRenderer.invoke('preview:getLocalPath', serverId, remotePath),
+    getDataUrl: (serverId, remotePath) =>
+      ipcRenderer.invoke('preview:getDataUrl', serverId, remotePath),
+    getOnlineUrl: (serverId, remotePath) =>
+      ipcRenderer.invoke('preview:getOnlineUrl', serverId, remotePath)
   },
   utils: {
-    filePathToUrl: (p) => pathToFileURL(p).toString()
+    filePathToUrl: (p) => {
+      if (/^https?:\/\//i.test(p)) return p
+      return pathToFileURL(p).toString()
+    },
+    remotePathToUrl: async (serverId, remotePath) => {
+      const conn = (await ipcRenderer.invoke(
+        'connections:getById',
+        serverId
+      )) as WebDavConnection | null
+      if (!conn) throw new Error('连接不存在')
+      return buildWebDavUrl(conn.serverUrl, conn.basePath, remotePath)
+    },
+    remotePathToPreviewUrl: async (serverId, remotePath) => {
+      return ipcRenderer.invoke('preview:getOnlineUrl', serverId, remotePath)
+    }
   }
 }
 

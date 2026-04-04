@@ -16,7 +16,7 @@ import {
 } from './store'
 import { deletePath, listDirectory, moveIntoFolder, testConnection } from './webdav'
 import { transferQueue } from './transfers/queue'
-import { getPreviewLocalPath } from './preview'
+import { getPreviewDataUrl, getPreviewLocalPath, getPreviewOnlineUrl } from './preview'
 
 const getErrorMessage = (err: unknown): string => {
   if (err && typeof err === 'object' && 'message' in err) {
@@ -101,5 +101,11 @@ export const registerIpc = (win: BrowserWindow): void => {
 
   ipcMain.handle('preview:getLocalPath', async (_e, serverId: string, remotePath: string) => {
     return getPreviewLocalPath(serverId, remotePath)
+  })
+  ipcMain.handle('preview:getDataUrl', async (_e, serverId: string, remotePath: string) => {
+    return getPreviewDataUrl(serverId, remotePath)
+  })
+  ipcMain.handle('preview:getOnlineUrl', (_e, serverId: string, remotePath: string) => {
+    return getPreviewOnlineUrl(serverId, remotePath)
   })
 }
