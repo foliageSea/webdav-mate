@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from 'vue'
-import { NButton, NCard, NDivider } from 'naive-ui'
+import { Clean, Renew } from '@vicons/carbon'
+import { NButton, NCard, NDivider, NIcon } from 'naive-ui'
 import type { TransferTask } from '@shared/ipc'
 import TransferList from '../components/TransferList.vue'
 
@@ -45,8 +46,18 @@ onUnmounted(() => {
           <div class="text-[12px] text-white/55 mt-1">批量上传/下载任务进度与控制</div>
         </div>
         <div class="flex items-center gap-2">
-          <NButton size="small" secondary :loading="loading" @click="refresh">刷新</NButton>
-          <NButton size="small" secondary @click="clearDone">清理完成</NButton>
+          <NButton size="small" secondary :loading="loading" @click="refresh">
+            <template #icon>
+              <NIcon><Renew /></NIcon>
+            </template>
+            刷新
+          </NButton>
+          <NButton size="small" secondary @click="clearDone">
+            <template #icon>
+              <NIcon><Clean /></NIcon>
+            </template>
+            清理完成
+          </NButton>
         </div>
       </div>
 

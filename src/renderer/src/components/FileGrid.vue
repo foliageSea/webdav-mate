@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { NCheckbox, NEmpty, NSpin } from 'naive-ui'
+import { Document, Folder, Image, Video } from '@vicons/carbon'
+import { NCheckbox, NEmpty, NIcon, NSpin } from 'naive-ui'
 import type { RemoteEntry } from '@shared/ipc'
 
 const props = defineProps<{
@@ -75,6 +76,11 @@ const isMedia = (entry: RemoteEntry): boolean => {
   return entry.contentType.startsWith('image/') || entry.contentType.startsWith('video/')
 }
 
+const isVideo = (entry: RemoteEntry): boolean => {
+  if (!entry.contentType) return false
+  return entry.contentType.startsWith('video/')
+}
+
 const onDoubleClick = (entry: RemoteEntry): void => emit('activate', entry)
 </script>
 
@@ -117,7 +123,10 @@ const onDoubleClick = (entry: RemoteEntry): void => emit('activate', entry)
               "
             >
               <div class="text-[20px]">
-                {{ entry.kind === 'folder' ? '📁' : isMedia(entry) ? '🖼️' : '📄' }}
+                <NIcon size="22" v-if="entry.kind === 'folder'"><Folder /></NIcon>
+                <NIcon size="22" v-else-if="isMedia(entry) && isVideo(entry)"><Video /></NIcon>
+                <NIcon size="22" v-else-if="isMedia(entry)"><Image /></NIcon>
+                <NIcon size="22" v-else><Document /></NIcon>
               </div>
             </div>
           </div>

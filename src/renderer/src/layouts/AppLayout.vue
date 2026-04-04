@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { NButton, NLayout, NLayoutContent, NLayoutHeader, NLayoutSider } from 'naive-ui'
+import { Cloud, FolderOpen, Task } from '@vicons/carbon'
+import { NButton, NIcon, NLayout, NLayoutContent, NLayoutHeader, NLayoutSider } from 'naive-ui'
 
 const route = useRoute()
 const router = useRouter()
@@ -30,7 +31,10 @@ const go = (key: 'servers' | 'files' | 'transfers'): void => {
   <NLayout class="h-full" has-sider>
     <NLayoutSider bordered width="220" class="bg-[#0F1A2B]" content-class="p-3 flex flex-col gap-2">
       <div class="px-2 py-3">
-        <div class="text-[14px] font-700 text-white/90">WebDAV-Mate</div>
+        <div class="text-[14px] font-700 text-white/90 flex items-center gap-2">
+          <NIcon size="16"><Cloud /></NIcon>
+          <span>WebDAV-Mate</span>
+        </div>
         <div class="text-[12px] text-white/55">多 WebDAV 文件管理</div>
       </div>
 
@@ -39,9 +43,15 @@ const go = (key: 'servers' | 'files' | 'transfers'): void => {
         secondary
         @click="go('servers')"
       >
+        <template #icon>
+          <NIcon><Cloud /></NIcon>
+        </template>
         连接管理
       </NButton>
       <NButton :type="active === 'files' ? 'primary' : 'default'" secondary @click="go('files')">
+        <template #icon>
+          <NIcon><FolderOpen /></NIcon>
+        </template>
         文件浏览
       </NButton>
       <NButton
@@ -49,6 +59,9 @@ const go = (key: 'servers' | 'files' | 'transfers'): void => {
         secondary
         @click="go('transfers')"
       >
+        <template #icon>
+          <NIcon><Task /></NIcon>
+        </template>
         传输队列
       </NButton>
     </NLayoutSider>

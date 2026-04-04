@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { NButton, NProgress, NTag } from 'naive-ui'
+import { Continue, Pause, Renew, TrashCan } from '@vicons/carbon'
+import { NButton, NIcon, NProgress, NTag } from 'naive-ui'
 import type { TransferTask } from '@shared/ipc'
 
 const props = defineProps<{ tasks: TransferTask[] }>()
@@ -67,10 +68,16 @@ const retry = async (t: TransferTask): Promise<void> => {
             secondary
             @click="toggle(t)"
           >
+            <template #icon>
+              <NIcon><Pause v-if="t.status === 'running'" /><Continue v-else /></NIcon>
+            </template>
             {{ actionLabel(t) }}
           </NButton>
-          <NButton v-if="t.status === 'failed'" size="tiny" secondary @click="retry(t)"
-            >重试</NButton
+          <NButton v-if="t.status === 'failed'" size="tiny" secondary @click="retry(t)">
+            <template #icon>
+              <NIcon><Renew /></NIcon>
+            </template>
+            重试</NButton
           >
           <NButton
             v-if="t.status !== 'done' && t.status !== 'canceled'"
@@ -79,6 +86,9 @@ const retry = async (t: TransferTask): Promise<void> => {
             type="error"
             @click="cancel(t)"
           >
+            <template #icon>
+              <NIcon><TrashCan /></NIcon>
+            </template>
             取消
           </NButton>
         </div>

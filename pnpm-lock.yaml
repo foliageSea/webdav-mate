@@ -54,6 +54,9 @@ importers:
       '@unocss/reset':
         specifier: ^66.6.7
         version: 66.6.7
+      '@vicons/carbon':
+        specifier: ^0.13.0
+        version: 0.13.0
       '@vitejs/plugin-vue':
         specifier: ^6.0.2
         version: 6.0.5(vite@7.3.1(@types/node@22.19.17)(jiti@2.6.1))(vue@3.5.32(typescript@5.9.3))
@@ -1170,6 +1173,9 @@ packages:
     resolution: {integrity: sha512-8AHrVzAecnQaPLJv3/mpyFt5j2iL3gEwkZcZ8HzjH5ttK2XON1YE9vgujN5NS/yvZwlJxCMNPxn0S410/Ek61A==}
     peerDependencies:
       vite: ^2.9.0 || ^3.0.0-0 || ^4.0.0 || ^5.0.0-0 || ^6.0.0-0 || ^7.0.0-0 || ^8.0.0-0
+
+  '@vicons/carbon@0.13.0':
+    resolution: {integrity: sha512-Z/jExyyS4gsXJc66oTqV/j98nsaiX2JlQ0IUwu9Ms3rztf8VOHEQRuX8Jey1/zbxJpFY/tU+bWvKPRFYGIvCWQ==}
 
   '@vitejs/plugin-vue@6.0.5':
     resolution: {integrity: sha512-bL3AxKuQySfk1iGcBsQnoRVexTPJq0Z/ixFVM8OhVJAP6ZXXXLtM7NFKWhLl30Kg7uTBqIaPXbh+nuQCuBDedg==}
@@ -4159,6 +4165,8 @@ snapshots:
       tinyglobby: 0.2.15
       unplugin-utils: 0.3.1
       vite: 7.3.1(@types/node@22.19.17)(jiti@2.6.1)
+
+  '@vicons/carbon@0.13.0': {}
 
   '@vitejs/plugin-vue@6.0.5(vite@7.3.1(@types/node@22.19.17)(jiti@2.6.1))(vue@3.5.32(typescript@5.9.3))':
     dependencies:

@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { NButton, NCard, NDivider, NSelect, useMessage } from 'naive-ui'
+import { Add, ArrowUp, Download, Renew, TrashCan, Upload } from '@vicons/carbon'
+import { NButton, NCard, NDivider, NIcon, NScrollbar, NSelect, useMessage } from 'naive-ui'
 import type { RemoteEntry, WebDavConnection } from '@shared/ipc'
 import FileGrid from '../components/FileGrid.vue'
 import MediaPreview from '../components/MediaPreview.vue'
@@ -33,7 +34,7 @@ const refresh = async (): Promise<void> => {
   loading.value = true
   try {
     entries.value = await window.api.files.list(serverId.value, path.value)
-    console.log(serverId.value, path.value,entries.value)
+    console.log(serverId.value, path.value, entries.value)
   } catch (e) {
     message.error(String(e))
   } finally {
@@ -195,51 +196,94 @@ onMounted(async () => {
 <template>
   <div class="h-full overflow-hidden">
     <div class="h-full flex flex-col">
-      <div class="px-4 pt-4">
-        <div class="flex items-center justify-between gap-3">
-          <div>
+      <div class="px-3 pt-3 sm:px-4 sm:pt-4">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div class="min-w-0">
             <div class="text-[16px] font-700 text-white/90">文件浏览</div>
-            <div class="text-[12px] text-white/55 mt-1">{{ currentName }} · {{ path }}</div>
+            <div class="mt-1 break-all text-[12px] text-white/55">
+              {{ currentName }} · {{ path }}
+            </div>
           </div>
-          <div class="flex items-center gap-2">
+          <div class="flex flex-wrap items-center gap-2 sm:justify-end">
             <NSelect
-              class="w-[240px]"
+              class="w-full sm:w-[240px]"
               size="small"
               :options="serverOptions"
               :value="serverId"
               @update:value="(v) => (serverId = v)"
             />
-            <NButton size="small" secondary :disabled="!serverId" @click="uploadFiles"
-              >上传文件</NButton
+            <NButton
+              class="flex-1 min-w-[112px] sm:flex-none"
+              size="small"
+              secondary
+              :disabled="!serverId"
+              @click="uploadFiles"
             >
-            <NButton size="small" secondary :disabled="!serverId" @click="uploadFolder"
-              >上传文件夹</NButton
+              <template #icon>
+                <NIcon><Upload /></NIcon>
+              </template>
+              上传文件</NButton
             >
             <NButton
+              class="flex-1 min-w-[112px] sm:flex-none"
+              size="small"
+              secondary
+              :disabled="!serverId"
+              @click="uploadFolder"
+            >
+              <template #icon>
+                <NIcon><Upload /></NIcon>
+              </template>
+              上传文件夹</NButton
+            >
+            <NButton
+              class="flex-1 min-w-[112px] sm:flex-none"
               size="small"
               secondary
               :disabled="!serverId || selected.size === 0"
               @click="downloadSelected"
             >
+              <template #icon>
+                <NIcon><Download /></NIcon>
+              </template>
               下载所选
             </NButton>
             <NButton
+              class="flex-1 min-w-[112px] sm:flex-none"
               size="small"
               secondary
               type="error"
               :disabled="!serverId || selected.size === 0"
               @click="deleteSelected"
             >
+              <template #icon>
+                <NIcon><TrashCan /></NIcon>
+              </template>
               删除所选
             </NButton>
-            <NButton size="small" secondary :disabled="!serverId" @click="goUp">上一级</NButton>
             <NButton
+              class="flex-1 min-w-[112px] sm:flex-none"
+              size="small"
+              secondary
+              :disabled="!serverId"
+              @click="goUp"
+            >
+              <template #icon>
+                <NIcon><ArrowUp /></NIcon>
+              </template>
+              上一级
+            </NButton>
+            <NButton
+              class="flex-1 min-w-[112px] sm:flex-none"
               size="small"
               secondary
               :loading="loading"
               :disabled="!serverId"
               @click="refresh"
             >
+              <template #icon>
+                <NIcon><Renew /></NIcon>
+              </template>
               刷新
             </NButton>
           </div>
@@ -248,29 +292,36 @@ onMounted(async () => {
         <NDivider class="my-3" />
       </div>
 
-      <div class="flex-1 overflow-hidden px-4 pb-4">
+      <div class="flex-1 overflow-hidden px-3 pb-3 sm:px-4 sm:pb-4">
         <NCard
           class="h-full bg-[#0F1A2B]"
           size="small"
           :bordered="true"
           content-style="height: 100%"
         >
-          <div v-if="!serverId" class="h-full flex items-center justify-center">
-            <div class="text-center">
-              <div class="text-[13px] text-white/70">请先在“连接管理”新增一个连接</div>
-              <NButton class="mt-3" type="primary" @click="router.push('/servers')">去新增</NButton>
+          <NScrollbar class="h-full">
+            <div v-if="!serverId" class="h-full flex items-center justify-center">
+              <div class="text-center">
+                <div class="text-[13px] text-white/70">请先在“连接管理”新增一个连接</div>
+                <NButton class="mt-3" type="primary" @click="router.push('/servers')">
+                  <template #icon>
+                    <NIcon><Add /></NIcon>
+                  </template>
+                  去新增
+                </NButton>
+              </div>
             </div>
-          </div>
-          <FileGrid
-            v-else
-            :entries="entries"
-            :selected="selected"
-            :loading="loading"
-            @activate="activateEntry"
-            @external-drop="onExternalDrop"
-            @move-into-folder="onMoveIntoFolder"
-            @update:selected="(s) => (selected = s)"
-          />
+            <FileGrid
+              v-else
+              :entries="entries"
+              :selected="selected"
+              :loading="loading"
+              @activate="activateEntry"
+              @external-drop="onExternalDrop"
+              @move-into-folder="onMoveIntoFolder"
+              @update:selected="(s) => (selected = s)"
+            />
+          </NScrollbar>
         </NCard>
       </div>
     </div>

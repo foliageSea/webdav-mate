@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import { Add, Edit, Link, TrashCan } from '@vicons/carbon'
 import {
   NButton,
   NCard,
   NDivider,
   NForm,
   NFormItem,
+  NIcon,
   NInput,
   NModal,
   NTable,
@@ -123,7 +125,12 @@ onMounted(() => {
           <div class="text-[16px] font-700 text-white/90">连接管理</div>
           <div class="text-[12px] text-white/55 mt-1">保存多个 WebDAV 服务并快速切换</div>
         </div>
-        <NButton type="primary" @click="openCreate">新增连接</NButton>
+        <NButton @click="openCreate">
+          <template #icon>
+            <NIcon><Add /></NIcon>
+          </template>
+          新增连接
+        </NButton>
       </div>
 
       <NDivider class="my-4" />
@@ -158,11 +165,17 @@ onMounted(() => {
                   <NButton size="tiny" secondary :loading="loading" @click="setCurrent(c.id)"
                     >设为当前</NButton
                   >
-                  <NButton size="tiny" secondary :loading="loading" @click="testConn(c.id)"
-                    >测试</NButton
+                  <NButton size="tiny" secondary :loading="loading" @click="testConn(c.id)">
+                    <template #icon>
+                      <NIcon><Link /></NIcon>
+                    </template>
+                    测试</NButton
                   >
-                  <NButton size="tiny" secondary :loading="loading" @click="openEdit(c.id)"
-                    >编辑</NButton
+                  <NButton size="tiny" secondary :loading="loading" @click="openEdit(c.id)">
+                    <template #icon>
+                      <NIcon><Edit /></NIcon>
+                    </template>
+                    编辑</NButton
                   >
                   <NButton
                     size="tiny"
@@ -171,6 +184,9 @@ onMounted(() => {
                     :loading="loading"
                     @click="removeConn(c.id)"
                   >
+                    <template #icon>
+                      <NIcon><TrashCan /></NIcon>
+                    </template>
                     删除
                   </NButton>
                 </div>
