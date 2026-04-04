@@ -125,18 +125,15 @@ const goNext = (): void => {
     :show="show"
     preset="card"
     style="width: min(980px, calc(100vw - 32px)); height: 720px; max-height: calc(100vh - 32px)"
-    :mask-closable="true"
+    :mask-closable="false"
     @update:show="(v) => emit('update:show', v)"
   >
     <template #header>
       {{ current?.name ?? '预览' }}
     </template>
-    <div class="h-full min-h-0 flex flex-col overflow-hidden">
+    <div class="h-full flex flex-col overflow-hidden">
       <div class="flex items-start justify-between gap-3">
         <div class="min-w-0">
-          <!-- <div class="text-[14px] font-700 text-white/90 truncate">
-            {{ current?.name ?? '预览' }}
-          </div> -->
           <div class="text-[12px] text-white/45 mt-1 truncate">{{ remotePath ?? '' }}</div>
         </div>
         <div class="flex items-center gap-2">
@@ -149,23 +146,21 @@ const goNext = (): void => {
           >
             下一张
           </NButton>
-          <!-- <NButton size="small" secondary @click="close">关闭</NButton> -->
         </div>
       </div>
 
       <div
-        class="flex-1 min-h-0 mt-3 rounded-[10px] bg-black/30 border border-white/10 overflow-hidden"
+        class="flex-1 h-full min-h-0 mt-3 rounded-[10px]  border border-white/10 overflow-hidden"
       >
         <div v-if="loading" class="h-full flex items-center justify-center">
           <NSpin size="large" />
         </div>
 
-        <div v-else class="h-full w-full overflow-hidden">
+        <div v-else class="h-full flex items-center justify-center">
           <NImage
             v-if="isImage && localUrl"
             :src="localUrl"
-            class="img"
-            draggable="false"
+            class=" h-[600px]"
           />
           <div v-else-if="isVideo && localUrl" ref="videoContainerRef" class="w-full h-full" />
           <div v-else class="h-full flex items-center justify-center text-white/50">不支持预览</div>
@@ -181,4 +176,16 @@ const goNext = (): void => {
   height: 100% !important;
 }
 
+/* .img {
+  width: 100%;
+  height: 100%;
+} */
+
+/* :deep(.img img) {
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+} */
 </style>
