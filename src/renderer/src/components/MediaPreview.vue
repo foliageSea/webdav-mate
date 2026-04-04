@@ -99,12 +99,16 @@ const goNext = (): void => {
     :mask-closable="true"
     @update:show="(v) => emit('update:show', v)"
   >
+    <template #header>
+      {{ current?.name ?? '预览' }}
+
+    </template>
     <div class="h-full flex flex-col">
       <div class="flex items-start justify-between gap-3">
         <div class="min-w-0">
-          <div class="text-[14px] font-700 text-white/90 truncate">
+          <!-- <div class="text-[14px] font-700 text-white/90 truncate">
             {{ current?.name ?? '预览' }}
-          </div>
+          </div> -->
           <div class="text-[12px] text-white/45 mt-1 truncate">{{ remotePath ?? '' }}</div>
         </div>
         <div class="flex items-center gap-2">
@@ -117,7 +121,7 @@ const goNext = (): void => {
           >
             下一张
           </NButton>
-          <NButton size="small" secondary @click="close">关闭</NButton>
+          <!-- <NButton size="small" secondary @click="close">关闭</NButton> -->
         </div>
       </div>
 

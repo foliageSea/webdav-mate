@@ -139,7 +139,7 @@ onMounted(() => {
         <NTable :single-line="false" size="small">
           <thead>
             <tr>
-              <th class="w-[180px]">名称</th>
+              <th class="w-[200px]">名称</th>
               <th>URL</th>
               <th class="w-[160px]">用户名</th>
               <th class="w-[280px]">操作</th>
