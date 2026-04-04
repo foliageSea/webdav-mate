@@ -88,6 +88,12 @@ type RendererApi = {
     remotePathToUrl(serverId: string, remotePath: string): Promise<string>
     remotePathToPreviewUrl(serverId: string, remotePath: string): Promise<string>
   }
+  windowControls: {
+    minimize(): Promise<void>
+    toggleMaximize(): Promise<boolean>
+    isMaximized(): Promise<boolean>
+    close(): Promise<void>
+  }
 }
 
 const api: RendererApi = {
@@ -157,6 +163,12 @@ const api: RendererApi = {
     remotePathToPreviewUrl: async (serverId, remotePath) => {
       return ipcRenderer.invoke('preview:getOnlineUrl', serverId, remotePath)
     }
+  },
+  windowControls: {
+    minimize: () => ipcRenderer.invoke('window:minimize'),
+    toggleMaximize: () => ipcRenderer.invoke('window:toggleMaximize'),
+    isMaximized: () => ipcRenderer.invoke('window:isMaximized'),
+    close: () => ipcRenderer.invoke('window:close')
   }
 }
 

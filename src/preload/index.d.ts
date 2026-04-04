@@ -53,6 +53,12 @@ type RendererApi = {
     remotePathToUrl(serverId: string, remotePath: string): Promise<string>
     remotePathToPreviewUrl(serverId: string, remotePath: string): Promise<string>
   }
+  windowControls: {
+    minimize(): Promise<void>
+    toggleMaximize(): Promise<boolean>
+    isMaximized(): Promise<boolean>
+    close(): Promise<void>
+  }
 }
 
 declare global {

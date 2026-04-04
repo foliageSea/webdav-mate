@@ -108,4 +108,20 @@ export const registerIpc = (win: BrowserWindow): void => {
   ipcMain.handle('preview:getOnlineUrl', (_e, serverId: string, remotePath: string) => {
     return getPreviewOnlineUrl(serverId, remotePath)
   })
+
+  ipcMain.handle('window:minimize', () => {
+    win.minimize()
+  })
+  ipcMain.handle('window:toggleMaximize', () => {
+    if (win.isMaximized()) {
+      win.unmaximize()
+      return false
+    }
+    win.maximize()
+    return true
+  })
+  ipcMain.handle('window:isMaximized', () => win.isMaximized())
+  ipcMain.handle('window:close', () => {
+    win.close()
+  })
 }
