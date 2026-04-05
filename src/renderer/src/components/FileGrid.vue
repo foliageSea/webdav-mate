@@ -92,7 +92,7 @@ const onDoubleClick = (entry: RemoteEntry): void => emit('activate', entry)
     @dragleave.prevent="onDragLeave"
     @drop.prevent="onDrop"
   >
-    <div class="h-full overflow-auto">
+    <div class="h-full overflow-auto p-2">
       <div class="grid gap-3" style="grid-template-columns: repeat(auto-fill, minmax(160px, 1fr))">
         <div
           v-for="entry in sorted"
