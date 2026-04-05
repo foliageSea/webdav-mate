@@ -132,15 +132,18 @@ const goNext = (): void => {
 <template>
   <NModal
     :show="show"
-    preset="card"
-    style="width: min(980px, calc(100vw - 32px)); height: 720px; max-height: calc(100vh - 32px)"
+    preset="dialog"
     :mask-closable="false"
     @update:show="(v) => emit('update:show', v)"
+    style="width: 840px;"
   >
     <template #header>
       {{ current?.name ?? '预览' }}
     </template>
-    <div class="h-full flex flex-col overflow-hidden">
+    <div
+      class="w-full h-full flex flex-col overflow-hidden"
+      style="width: 100%; height: 540px; max-height: calc(100vh - 32px)"
+    >
       <div class="flex items-start justify-between gap-3">
         <div class="min-w-0">
           <div class="text-[12px] text-white/45 mt-1 truncate">{{ remotePath ?? '' }}</div>
@@ -159,26 +162,25 @@ const goNext = (): void => {
       </div>
 
       <div
-        class="flex-1 h-full min-h-0 mt-3 rounded-[10px] bg-black border border-white/10 overflow-hidden"
+        class="flex-1 w-full h-full min-h-0 mt-3 rounded-[10px] bg-black/20 border border-white/10 overflow-hidden"
       >
         <div v-if="loading" class="h-full flex items-center justify-center">
           <NSpin size="large" />
         </div>
 
-        <div v-else class="relative h-full flex items-center justify-center">
-          <NImage
-            v-if="isImage && localUrl"
-            :src="localUrl"
-            class="h-[600px]"
-            :class="{ invisible: imageLoading }"
-            @load="imageLoading = false"
-            @error="imageLoading = false"
-          />
-          <div
-            v-if="isImage && localUrl && imageLoading"
-            class="absolute inset-0 flex items-center justify-center"
-          >
-            <NSpin size="large" />
+        <div v-else class="relative w-full h-full">
+          <div v-if="isImage && localUrl" class="image-stage">
+            <img
+              :src="localUrl"
+              alt="preview"
+              class="preview-image"
+              :class="{ invisible: imageLoading }"
+              @load="imageLoading = false"
+              @error="imageLoading = false"
+            />
+            <div v-if="imageLoading" class="absolute inset-0 flex items-center justify-center">
+              <NSpin size="large" />
+            </div>
           </div>
           <div v-else-if="isVideo && localUrl" ref="videoContainerRef" class="w-full h-full" />
           <div v-else class="h-full flex items-center justify-center text-white/50"></div>
@@ -194,16 +196,16 @@ const goNext = (): void => {
   height: 100% !important;
 }
 
-/* .img {
+.image-stage {
   width: 100%;
   height: 100%;
-} */
+  position: relative;
+}
 
-/* :deep(.img img) {
+.preview-image {
   width: 100%;
   height: 100%;
-  max-width: 100%;
-  max-height: 100%;
+  display: block;
   object-fit: contain;
-} */
+}
 </style>
