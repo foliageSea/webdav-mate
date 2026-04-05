@@ -10,7 +10,6 @@ import {
   NIcon,
   NInput,
   NModal,
-  NTable,
   useMessage
 } from 'naive-ui'
 import type { WebDavConnection, WebDavConnectionUpsertInput } from '@shared/ipc'
@@ -136,20 +135,22 @@ onMounted(() => {
       <NDivider class="my-4" />
 
       <NCard size="small" class="bg-[rgba(15,26,43,0.58)] backdrop-blur-[1px]" :bordered="true">
-        <NTable :single-line="false" size="small">
-          <thead>
-            <tr>
-              <th class="w-[200px]">名称</th>
-              <th>URL</th>
-              <th class="w-[160px]">用户名</th>
-              <th class="w-[280px]">操作</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="c in connections" :key="c.id">
-              <td>
+        <div v-if="connections.length === 0" class="text-white/50 py-8 text-center">
+          暂无连接，先新增一个
+        </div>
+
+        <div v-else class="space-y-3">
+          <NCard
+            v-for="c in connections"
+            :key="c.id"
+            size="small"
+            :bordered="true"
+            class="bg-[rgba(18,33,56,0.55)]"
+          >
+            <div class="flex items-start justify-between gap-4">
+              <div class="min-w-0 flex-1">
                 <div class="flex items-center gap-2">
-                  <div class="text-white/90">{{ c.name }}</div>
+                  <div class="text-white/90 font-600 truncate">{{ c.name }}</div>
                   <div
                     v-if="currentId === c.id"
                     class="text-[11px] px-2 py-0.5 rounded bg-brand-500/20 text-brand-200"
@@ -157,46 +158,51 @@ onMounted(() => {
                     当前
                   </div>
                 </div>
-              </td>
-              <td class="text-white/60">{{ c.serverUrl }}</td>
-              <td class="text-white/60">{{ c.username }}</td>
-              <td>
-                <div class="flex flex-wrap gap-2">
-                  <NButton size="tiny" secondary :loading="loading" @click="setCurrent(c.id)"
-                    >设为当前</NButton
-                  >
-                  <NButton size="tiny" secondary :loading="loading" @click="testConn(c.id)">
-                    <template #icon>
-                      <NIcon><Link /></NIcon>
-                    </template>
-                    测试</NButton
-                  >
-                  <NButton size="tiny" secondary :loading="loading" @click="openEdit(c.id)">
-                    <template #icon>
-                      <NIcon><Edit /></NIcon>
-                    </template>
-                    编辑</NButton
-                  >
-                  <NButton
-                    size="tiny"
-                    secondary
-                    type="error"
-                    :loading="loading"
-                    @click="removeConn(c.id)"
-                  >
-                    <template #icon>
-                      <NIcon><TrashCan /></NIcon>
-                    </template>
-                    删除
-                  </NButton>
+
+                <div class="mt-2 space-y-1 text-[12px] text-white/60 break-all">
+                  <div>
+                    <span class="text-white/40">URL：</span>
+                    <span>{{ c.serverUrl }}</span>
+                  </div>
+                  <div>
+                    <span class="text-white/40">用户名：</span>
+                    <span>{{ c.username }}</span>
+                  </div>
                 </div>
-              </td>
-            </tr>
-            <tr v-if="connections.length === 0">
-              <td colspan="4" class="text-white/50 py-8 text-center">暂无连接，先新增一个</td>
-            </tr>
-          </tbody>
-        </NTable>
+              </div>
+
+              <div class="flex flex-wrap justify-end gap-2">
+                <NButton size="tiny" secondary :loading="loading" @click="setCurrent(c.id)"
+                  >设为当前</NButton
+                >
+                <NButton size="tiny" secondary :loading="loading" @click="testConn(c.id)">
+                  <template #icon>
+                    <NIcon><Link /></NIcon>
+                  </template>
+                  测试
+                </NButton>
+                <NButton size="tiny" secondary :loading="loading" @click="openEdit(c.id)">
+                  <template #icon>
+                    <NIcon><Edit /></NIcon>
+                  </template>
+                  编辑
+                </NButton>
+                <NButton
+                  size="tiny"
+                  secondary
+                  type="error"
+                  :loading="loading"
+                  @click="removeConn(c.id)"
+                >
+                  <template #icon>
+                    <NIcon><TrashCan /></NIcon>
+                  </template>
+                  删除
+                </NButton>
+              </div>
+            </div>
+          </NCard>
+        </div>
       </NCard>
     </div>
 

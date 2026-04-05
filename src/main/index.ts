@@ -5,6 +5,12 @@ import icon from '../../resources/icon.png?asset'
 import { registerIpc } from './ipc'
 import { registerPreviewProtocol } from './preview'
 
+const WINDOW_WIDTH = 1200
+const WINDOW_HEIGHT = 780
+const WINDOW_MIN_WIDTH = 960
+const WINDOW_MIN_HEIGHT = 624
+const WINDOW_ASPECT_RATIO = WINDOW_WIDTH / WINDOW_HEIGHT
+
 protocol.registerSchemesAsPrivileged([
   {
     scheme: 'webdav-preview',
@@ -21,8 +27,10 @@ protocol.registerSchemesAsPrivileged([
 function createWindow(): void {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width: 1200,
-    height: 780,
+    width: WINDOW_WIDTH,
+    height: WINDOW_HEIGHT,
+    minWidth: WINDOW_MIN_WIDTH,
+    minHeight: WINDOW_MIN_HEIGHT,
     show: false,
     frame: false,
     autoHideMenuBar: true,
@@ -39,6 +47,8 @@ function createWindow(): void {
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()
   })
+
+  mainWindow.setAspectRatio(WINDOW_ASPECT_RATIO)
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
     shell.openExternal(details.url)
