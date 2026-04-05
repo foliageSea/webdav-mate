@@ -64,7 +64,11 @@ export const listDirectory = async (serverId: string, p: string): Promise<Remote
   const items = (Array.isArray(raw) ? raw : []) as DirItem[]
 
   return items
-    .filter((it) => it.filename && it.filename !== remotePath)
+    .filter((it) => {
+      if (!it.filename || it.filename === remotePath) return false
+      const name = entryName(it.filename)
+      return !name.startsWith('.')
+    })
     .map((it) => {
       const kind = it.type === 'directory' ? 'folder' : 'file'
       const name = entryName(it.filename)
