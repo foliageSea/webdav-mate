@@ -150,7 +150,7 @@ const goNext = (): void => {
       </div>
 
       <div
-        class="flex-1 h-full min-h-0 mt-3 rounded-[10px]  border border-white/10 overflow-hidden"
+        class="flex-1 h-full min-h-0 mt-3 rounded-[10px] bg-black  border border-white/10 overflow-hidden"
       >
         <div v-if="loading" class="h-full flex items-center justify-center">
           <NSpin size="large" />

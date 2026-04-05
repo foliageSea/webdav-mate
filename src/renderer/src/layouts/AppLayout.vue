@@ -57,8 +57,13 @@ onMounted(() => {
 </script>
 
 <template>
-  <NLayout class="h-full" has-sider>
-    <NLayoutSider bordered width="140" class="bg-[#0F1A2B]" content-class="p-3 flex flex-col gap-2">
+  <NLayout class="h-full bg-[rgba(8,14,25,0.38)]" has-sider>
+    <NLayoutSider
+      bordered
+      width="140"
+      class="bg-[rgba(15,26,43,0.72)]"
+      content-class="p-3 flex flex-col gap-2"
+    >
       <div class="px-2 py-3">
         <div class="text-[14px] font-700 text-white/90 flex items-center flex-col gap-2">
           <NIcon size="48"><Cloud /></NIcon>
@@ -94,8 +99,8 @@ onMounted(() => {
       </NButton>
     </NLayoutSider>
 
-    <NLayout class="h-full">
-      <NLayoutHeader bordered class="app-titlebar bg-[#111A2E]">
+    <NLayout class="h-full bg-[rgba(7,13,23,0.32)]">
+      <NLayoutHeader bordered class="app-titlebar bg-[rgba(17,26,46,0.62)]">
         <div class="titlebar-drag-region">
           <div class="titlebar-left">
             <div v-if="isMac" class="mac-controls no-drag">
@@ -142,7 +147,7 @@ onMounted(() => {
           </div>
         </div>
       </NLayoutHeader>
-      <NLayoutContent class="bg-[#0B1220]">
+      <NLayoutContent class="bg-[rgba(11,18,32,0.42)]">
         <div class="h-[calc(100vh-38px)] overflow-hidden">
           <RouterView />
         </div>

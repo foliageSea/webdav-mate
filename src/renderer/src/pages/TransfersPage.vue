@@ -63,7 +63,7 @@ onUnmounted(() => {
 
       <NDivider class="my-4" />
 
-      <NCard size="small" class="bg-[#0F1A2B]" :bordered="true">
+      <NCard size="small" class="bg-[rgba(15,26,43,0.58)] backdrop-blur-[1px]" :bordered="true">
         <TransferList :tasks="tasks" />
       </NCard>
     </div>

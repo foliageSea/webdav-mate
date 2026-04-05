@@ -312,7 +312,7 @@ onMounted(async () => {
 
       <div class="flex-1 overflow-hidden px-3 pb-3 sm:px-4 sm:pb-4">
         <NCard
-          class="h-full bg-[#0F1A2B]"
+          class="h-full bg-[rgba(15,26,43,0.58)] backdrop-blur-[1px]"
           size="small"
           :bordered="true"
           content-style="height: 100%"
