@@ -19,6 +19,7 @@ const emit = defineEmits<{
 
 const localUrl = ref<string | null>(null)
 const loading = ref(false)
+const imageLoading = ref(false)
 const videoContainerRef = ref<HTMLElement | null>(null)
 const videoPlayer = ref<Player | null>(null)
 
@@ -99,6 +100,14 @@ watch(
   { flush: 'post' }
 )
 
+watch(
+  [() => props.show, isImage, localUrl],
+  ([show, imageLike, url]) => {
+    imageLoading.value = Boolean(show && imageLike && url)
+  },
+  { immediate: true }
+)
+
 onBeforeUnmount(() => {
   destroyPlayer()
 })
@@ -150,20 +159,29 @@ const goNext = (): void => {
       </div>
 
       <div
-        class="flex-1 h-full min-h-0 mt-3 rounded-[10px] bg-black  border border-white/10 overflow-hidden"
+        class="flex-1 h-full min-h-0 mt-3 rounded-[10px] bg-black border border-white/10 overflow-hidden"
       >
         <div v-if="loading" class="h-full flex items-center justify-center">
           <NSpin size="large" />
         </div>
 
-        <div v-else class="h-full flex items-center justify-center">
+        <div v-else class="relative h-full flex items-center justify-center">
           <NImage
             v-if="isImage && localUrl"
             :src="localUrl"
-            class=" h-[600px]"
+            class="h-[600px]"
+            :class="{ invisible: imageLoading }"
+            @load="imageLoading = false"
+            @error="imageLoading = false"
           />
+          <div
+            v-if="isImage && localUrl && imageLoading"
+            class="absolute inset-0 flex items-center justify-center"
+          >
+            <NSpin size="large" />
+          </div>
           <div v-else-if="isVideo && localUrl" ref="videoContainerRef" class="w-full h-full" />
-          <div v-else class="h-full flex items-center justify-center text-white/50">不支持预览</div>
+          <div v-else class="h-full flex items-center justify-center text-white/50"></div>
         </div>
       </div>
     </div>
