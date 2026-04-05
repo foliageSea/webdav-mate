@@ -248,7 +248,7 @@ onMounted(async () => {
             </div>
           </div>
         </div>
-        <div class="flex w-full flex-col gap-2 sm:w-auto sm:items-end">
+        <div class="flex w-full flex-col gap-2 sm:w-auto sm:items-end mt-2">
           <!-- <NSelect class="w-full sm:w-[260px]" size="small" :options="serverOptions" :value="serverId"
             @update:value="(v) => (serverId = v)" /> -->
 
