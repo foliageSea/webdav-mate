@@ -204,152 +204,113 @@ onMounted(async () => {
                 文件浏览
               </div>
               <div
-                class="max-w-full truncate rounded-full border border-white/15 bg-white/5 px-2 py-0.5 text-[11px] text-white/75"
-              >
+                class="max-w-full truncate rounded-full border border-white/15 bg-white/5 px-2 py-0.5 text-[11px] text-white/75">
                 {{ currentName }}
               </div>
             </div>
             <div
-              class="flex items-center rounded-md border border-white/10 bg-white/[0.03] px-2.5 py-1.5 text-[12px] text-white/65"
-            >
+              class="flex items-center rounded-md border border-white/10 bg-white/[0.03] px-2.5 py-1.5 text-[12px] text-white/65">
               <span class="mr-1 shrink-0 text-white/45">路径</span>
               <span class="min-w-0 break-all leading-5">{{ path }}</span>
             </div>
           </div>
-          <div class="flex w-full flex-col gap-2 sm:w-auto sm:items-end">
-            <NSelect
-              class="w-full sm:w-[260px]"
-              size="small"
-              :options="serverOptions"
-              :value="serverId"
-              @update:value="(v) => (serverId = v)"
-            />
 
-            <div class="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:justify-end">
-              <NButton
-                class="flex-1 min-w-[112px] sm:flex-none"
-                size="small"
-                secondary
-                :disabled="!serverId"
-                @click="uploadFiles"
-              >
-                <template #icon>
-                  <NIcon><Upload /></NIcon>
-                </template>
-                上传文件</NButton
-              >
-              <NButton
-                class="flex-1 min-w-[112px] sm:flex-none"
-                size="small"
-                secondary
-                :disabled="!serverId"
-                @click="uploadFolder"
-              >
-                <template #icon>
-                  <NIcon><Upload /></NIcon>
-                </template>
-                上传文件夹</NButton
-              >
-              <NButton
-                class="flex-1 min-w-[112px] sm:flex-none"
-                size="small"
-                secondary
-                :loading="loading"
-                :disabled="!serverId"
-                @click="refresh"
-              >
-                <template #icon>
-                  <NIcon><Renew /></NIcon>
-                </template>
-                刷新
-              </NButton>
-            </div>
+        </div>
+        <div class="flex w-full flex-col gap-2 sm:w-auto sm:items-end">
+          <!-- <NSelect class="w-full sm:w-[260px]" size="small" :options="serverOptions" :value="serverId"
+            @update:value="(v) => (serverId = v)" /> -->
 
-            <div class="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:justify-end">
-              <NButton
-                class="flex-1 min-w-[112px] sm:flex-none"
-                size="small"
-                secondary
-                :disabled="!serverId"
-                @click="goUp"
-              >
-                <template #icon>
-                  <NIcon><ArrowUp /></NIcon>
-                </template>
-                上一级
-              </NButton>
-              <NButton
-                class="flex-1 min-w-[112px] sm:flex-none"
-                size="small"
-                secondary
-                :disabled="!serverId || selected.size === 0"
-                @click="downloadSelected"
-              >
-                <template #icon>
-                  <NIcon><Download /></NIcon>
-                </template>
-                下载所选
-              </NButton>
-              <NButton
-                class="flex-1 min-w-[112px] sm:flex-none"
-                size="small"
-                secondary
-                type="error"
-                :disabled="!serverId || selected.size === 0"
-                @click="deleteSelected"
-              >
-                <template #icon>
-                  <NIcon><TrashCan /></NIcon>
-                </template>
-                删除所选
-              </NButton>
-            </div>
+          <div class="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:justify-end">
+            <NButton class="flex-1 min-w-[112px] sm:flex-none" size="small" secondary :disabled="!serverId"
+              @click="goUp">
+              <template #icon>
+                <NIcon>
+                  <ArrowUp />
+                </NIcon>
+              </template>
+              上一级
+            </NButton>
+            <NButton class="flex-1 min-w-[112px] sm:flex-none" size="small" secondary :loading="loading"
+              :disabled="!serverId" @click="refresh">
+              <template #icon>
+                <NIcon>
+                  <Renew />
+                </NIcon>
+              </template>
+              刷新
+            </NButton>
+            <NButton class="flex-1 min-w-[112px] sm:flex-none" size="small" secondary :disabled="!serverId"
+              @click="uploadFiles">
+              <template #icon>
+                <NIcon>
+                  <Upload />
+                </NIcon>
+              </template>
+              上传文件
+            </NButton>
+            <NButton class="flex-1 min-w-[112px] sm:flex-none" size="small" secondary :disabled="!serverId"
+              @click="uploadFolder">
+              <template #icon>
+                <NIcon>
+                  <Upload />
+                </NIcon>
+              </template>
+              上传文件夹
+            </NButton>
+
+
+            <NButton class="flex-1 min-w-[112px] sm:flex-none" size="small" secondary
+              :disabled="!serverId || selected.size === 0" @click="downloadSelected">
+              <template #icon>
+                <NIcon>
+                  <Download />
+                </NIcon>
+              </template>
+              下载所选
+            </NButton>
+            <NButton class="flex-1 min-w-[112px] sm:flex-none" size="small" secondary type="error"
+              :disabled="!serverId || selected.size === 0" @click="deleteSelected">
+              <template #icon>
+                <NIcon>
+                  <TrashCan />
+                </NIcon>
+              </template>
+              删除所选
+            </NButton>
           </div>
+
+
         </div>
 
         <NDivider class="my-3" />
       </div>
 
       <div class="flex-1 overflow-hidden px-3 pb-3 sm:px-4 sm:pb-4">
-        <NCard
-          class="h-full bg-[rgba(15,26,43,0.58)] backdrop-blur-[1px]"
-          size="small"
-          :bordered="true"
-          content-style="height: 100%"
-        >
+        <NCard class="h-full bg-[rgba(15,26,43,0.58)] backdrop-blur-[1px]" size="small" :bordered="true"
+          content-style="height: 100%">
           <NScrollbar class="h-full">
             <div v-if="!serverId" class="h-full flex items-center justify-center">
               <div class="text-center">
                 <div class="text-[13px] text-white/70">请先在“连接管理”新增一个连接</div>
                 <NButton class="mt-3" type="primary" @click="router.push('/servers')">
                   <template #icon>
-                    <NIcon><Add /></NIcon>
+                    <NIcon>
+                      <Add />
+                    </NIcon>
                   </template>
                   去新增
                 </NButton>
               </div>
             </div>
-            <FileGrid
-              v-else
-              :entries="entries"
-              :selected="selected"
-              :loading="loading"
-              @activate="activateEntry"
-              @external-drop="onExternalDrop"
-              @move-into-folder="onMoveIntoFolder"
-              @update:selected="(s) => (selected = s)"
-            />
+            <FileGrid v-else :entries="entries" :selected="selected" :loading="loading" @activate="activateEntry"
+              @external-drop="onExternalDrop" @move-into-folder="onMoveIntoFolder"
+              @update:selected="(s) => (selected = s)" />
           </NScrollbar>
         </NCard>
       </div>
     </div>
 
-    <MediaPreview
-      v-model:show="showPreview"
-      :server-id="serverId"
-      :remote-path="previewPath"
-      :entries="entries"
-      @navigate="(p) => (previewPath = p)"
-    />
+    <MediaPreview v-model:show="showPreview" :server-id="serverId" :remote-path="previewPath" :entries="entries"
+      @navigate="(p) => (previewPath = p)" />
   </div>
 </template>
