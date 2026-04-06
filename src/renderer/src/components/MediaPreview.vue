@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { NButton, NModal, NSpin, NImage } from 'naive-ui'
 import Player from 'xgplayer'
 import 'xgplayer/dist/index.min.css'
@@ -20,6 +20,16 @@ const emit = defineEmits<{
 const localUrl = ref<string | null>(null)
 const loading = ref(false)
 const imageLoading = ref(false)
+const imageScale = ref(1)
+const imageTranslateX = ref(0)
+const imageTranslateY = ref(0)
+const draggingImage = ref(false)
+const imageStageRef = ref<HTMLElement | null>(null)
+const dragStartX = ref(0)
+const dragStartY = ref(0)
+const dragOriginX = ref(0)
+const dragOriginY = ref(0)
+const hasDragged = ref(false)
 const videoContainerRef = ref<HTMLElement | null>(null)
 const videoPlayer = ref<Player | null>(null)
 
@@ -75,6 +85,34 @@ const destroyPlayer = (): void => {
   videoPlayer.value = null
 }
 
+const resetImageTransform = (): void => {
+  imageScale.value = 1
+  imageTranslateX.value = 0
+  imageTranslateY.value = 0
+  draggingImage.value = false
+  hasDragged.value = false
+}
+
+const getClampBoundary = (scale = imageScale.value): { maxX: number; maxY: number } => {
+  const stage = imageStageRef.value
+  if (!stage || scale <= 1) return { maxX: 0, maxY: 0 }
+  const maxX = (stage.clientWidth * (scale - 1)) / 2
+  const maxY = (stage.clientHeight * (scale - 1)) / 2
+  return { maxX, maxY }
+}
+
+const clampTranslate = (
+  x: number,
+  y: number,
+  scale = imageScale.value
+): { x: number; y: number } => {
+  const { maxX, maxY } = getClampBoundary(scale)
+  return {
+    x: Math.min(maxX, Math.max(-maxX, x)),
+    y: Math.min(maxY, Math.max(-maxY, y))
+  }
+}
+
 watch(
   () => [props.show, props.serverId, props.remotePath],
   () => {
@@ -104,12 +142,67 @@ watch(
   [() => props.show, isImage, localUrl],
   ([show, imageLike, url]) => {
     imageLoading.value = Boolean(show && imageLike && url)
+    if (!show || !imageLike || !url) resetImageTransform()
   },
   { immediate: true }
 )
 
+const onImageWheel = (event: WheelEvent): void => {
+  if (imageLoading.value) return
+  const step = event.deltaY < 0 ? 0.12 : -0.12
+  const nextScale = Math.min(5, Math.max(1, Number((imageScale.value + step).toFixed(2))))
+  imageScale.value = nextScale
+  const clamped = clampTranslate(imageTranslateX.value, imageTranslateY.value, nextScale)
+  imageTranslateX.value = clamped.x
+  imageTranslateY.value = clamped.y
+  if (nextScale <= 1) {
+    imageTranslateX.value = 0
+    imageTranslateY.value = 0
+  }
+}
+
+const onImageMouseDown = (event: MouseEvent): void => {
+  if (imageScale.value <= 1) return
+  draggingImage.value = true
+  hasDragged.value = false
+  dragStartX.value = event.clientX
+  dragStartY.value = event.clientY
+  dragOriginX.value = imageTranslateX.value
+  dragOriginY.value = imageTranslateY.value
+}
+
+const onWindowMouseMove = (event: MouseEvent): void => {
+  if (!draggingImage.value) return
+  const dx = event.clientX - dragStartX.value
+  const dy = event.clientY - dragStartY.value
+  if (!hasDragged.value && (Math.abs(dx) > 2 || Math.abs(dy) > 2)) {
+    hasDragged.value = true
+  }
+  const clamped = clampTranslate(dragOriginX.value + dx, dragOriginY.value + dy)
+  imageTranslateX.value = clamped.x
+  imageTranslateY.value = clamped.y
+}
+
+const onWindowMouseUp = (): void => {
+  draggingImage.value = false
+}
+
+const onImageClickCapture = (event: MouseEvent): void => {
+  if (!hasDragged.value) return
+  event.preventDefault()
+  event.stopPropagation()
+  hasDragged.value = false
+}
+
+onMounted(() => {
+  window.addEventListener('mousemove', onWindowMouseMove)
+  window.addEventListener('mouseup', onWindowMouseUp)
+})
+
 onBeforeUnmount(() => {
   destroyPlayer()
+  window.removeEventListener('mousemove', onWindowMouseMove)
+  window.removeEventListener('mouseup', onWindowMouseUp)
 })
 
 const close = (): void => emit('update:show', false)
@@ -135,7 +228,7 @@ const goNext = (): void => {
     preset="dialog"
     :mask-closable="false"
     @update:show="(v) => emit('update:show', v)"
-    style="width: 840px;"
+    style="width: 840px"
   >
     <template #header>
       {{ current?.name ?? '预览' }}
@@ -169,11 +262,29 @@ const goNext = (): void => {
         </div>
 
         <div v-else class="relative w-full h-full">
-          <div v-if="isImage && localUrl" class="image-stage">
-            <img
+          <div
+            v-if="isImage && localUrl"
+            ref="imageStageRef"
+            class="image-stage"
+            :class="{ 'is-draggable': imageScale > 1, 'is-dragging': draggingImage }"
+            :style="{
+              '--preview-scale': String(imageScale),
+              '--preview-translate-x': `${imageTranslateX}px`,
+              '--preview-translate-y': `${imageTranslateY}px`,
+              '--preview-transition': draggingImage ? 'none' : 'transform 0.12s ease'
+            }"
+            @wheel.prevent="onImageWheel"
+            @mousedown.prevent="onImageMouseDown"
+            @click.capture="onImageClickCapture"
+          >
+            <NImage
               :src="localUrl"
+              :preview-src="localUrl"
               alt="preview"
-              class="preview-image"
+              object-fit="contain"
+              width="100%"
+              height="100%"
+              class="preview-image cursor-zoom-in"
               :class="{ invisible: imageLoading }"
               @load="imageLoading = false"
               @error="imageLoading = false"
@@ -181,6 +292,7 @@ const goNext = (): void => {
             <div v-if="imageLoading" class="absolute inset-0 flex items-center justify-center">
               <NSpin size="large" />
             </div>
+            <div v-else class="preview-tip">滚轮缩放，点击可全屏放大</div>
           </div>
           <div v-else-if="isVideo && localUrl" ref="videoContainerRef" class="w-full h-full" />
           <div v-else class="h-full flex items-center justify-center text-white/50"></div>
@@ -202,10 +314,39 @@ const goNext = (): void => {
   position: relative;
 }
 
+.image-stage.is-draggable {
+  cursor: grab;
+}
+
+.image-stage.is-dragging {
+  cursor: grabbing;
+}
+
 .preview-image {
   width: 100%;
   height: 100%;
   display: block;
+}
+
+.preview-image :deep(img) {
+  width: 100%;
+  height: 100%;
   object-fit: contain;
+  transform: translate(var(--preview-translate-x, 0), var(--preview-translate-y, 0))
+    scale(var(--preview-scale, 1));
+  transform-origin: center;
+  transition: var(--preview-transition, transform 0.12s ease);
+}
+
+.preview-tip {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.8);
+  background: rgba(0, 0, 0, 0.4);
+  pointer-events: none;
 }
 </style>
