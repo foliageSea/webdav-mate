@@ -4,6 +4,8 @@ import { electronAPI } from '@electron-toolkit/preload'
 import * as pathPosix from 'path/posix'
 import { pathToFileURL } from 'url'
 import type {
+  BatchRemoteActionInput,
+  CreateFolderInput,
   EnqueueDownloadInput,
   EnqueueUploadInput,
   RemoteEntry,
@@ -61,6 +63,9 @@ type RendererApi = {
     list(serverId: string, path: string): Promise<RemoteEntry[]>
     delete(serverId: string, path: string): Promise<void>
     moveInto(serverId: string, fromPath: string, targetFolderPath: string): Promise<void>
+    batchMoveInto(input: BatchRemoteActionInput): Promise<void>
+    batchCopyInto(input: BatchRemoteActionInput): Promise<void>
+    createFolder(input: CreateFolderInput): Promise<void>
   }
   transfers: {
     list(): Promise<TransferTask[]>
@@ -116,7 +121,10 @@ const api: RendererApi = {
     list: (serverId, path) => ipcRenderer.invoke('files:list', serverId, path),
     delete: (serverId, path) => ipcRenderer.invoke('files:delete', serverId, path),
     moveInto: (serverId, fromPath, targetFolderPath) =>
-      ipcRenderer.invoke('files:moveInto', serverId, fromPath, targetFolderPath)
+      ipcRenderer.invoke('files:moveInto', serverId, fromPath, targetFolderPath),
+    batchMoveInto: (input) => ipcRenderer.invoke('files:batchMoveInto', input),
+    batchCopyInto: (input) => ipcRenderer.invoke('files:batchCopyInto', input),
+    createFolder: (input) => ipcRenderer.invoke('files:createFolder', input)
   },
   transfers: {
     list: () => ipcRenderer.invoke('transfers:list'),

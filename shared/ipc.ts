@@ -56,3 +56,15 @@ export type EnqueueDownloadInput = {
   remotePaths: string[]
   overwrite?: boolean
 }
+
+export type BatchRemoteActionInput = {
+  serverId: string
+  fromPaths: string[]
+  targetFolderPath: string
+}
+
+export type CreateFolderInput = {
+  serverId: string
+  parentPath: string
+  folderName: string
+}

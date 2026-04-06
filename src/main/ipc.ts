@@ -1,5 +1,7 @@
 import { BrowserWindow, dialog, ipcMain } from 'electron'
 import type {
+  BatchRemoteActionInput,
+  CreateFolderInput,
   EnqueueDownloadInput,
   EnqueueUploadInput,
   WebDavConnectionUpsertInput
@@ -14,7 +16,15 @@ import {
   setLastPath,
   upsertConnection
 } from './store'
-import { deletePath, listDirectory, moveIntoFolder, testConnection } from './webdav'
+import {
+  batchCopyIntoFolder,
+  batchMoveIntoFolder,
+  createFolder,
+  deletePath,
+  listDirectory,
+  moveIntoFolder,
+  testConnection
+} from './webdav'
 import { transferQueue } from './transfers/queue'
 import { getPreviewDataUrl, getPreviewLocalPath, getPreviewOnlineUrl } from './preview'
 
@@ -58,6 +68,15 @@ export const registerIpc = (win: BrowserWindow): void => {
     (_e, serverId: string, fromPath: string, targetFolderPath: string) =>
       moveIntoFolder(serverId, fromPath, targetFolderPath)
   )
+  ipcMain.handle('files:batchMoveInto', (_e, input: BatchRemoteActionInput) => {
+    return batchMoveIntoFolder(input.serverId, input.fromPaths, input.targetFolderPath)
+  })
+  ipcMain.handle('files:batchCopyInto', (_e, input: BatchRemoteActionInput) => {
+    return batchCopyIntoFolder(input.serverId, input.fromPaths, input.targetFolderPath)
+  })
+  ipcMain.handle('files:createFolder', (_e, input: CreateFolderInput) => {
+    return createFolder(input.serverId, input.parentPath, input.folderName)
+  })
 
   ipcMain.handle('transfers:list', () => transferQueue.list())
   ipcMain.handle('transfers:clearDone', () => transferQueue.clearDone())

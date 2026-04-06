@@ -15,6 +15,7 @@ type WebDavClientCompat = {
   createDirectory(path: string): Promise<void>
   deleteFile(path: string): Promise<void>
   moveFile(fromPath: string, toPath: string, options?: { overwrite?: boolean }): Promise<void>
+  copyFile?(fromPath: string, toPath: string, options?: { overwrite?: boolean }): Promise<void>
   putFileContents(
     path: string,
     data: NodeJS.ReadableStream,
@@ -126,6 +127,78 @@ export const moveIntoFolder = async (
   const name = entryName(fromPath)
   const to = joinRemote(conn.basePath, pathPosix.join(cleanPath(targetFolderPath), name))
   await client.moveFile(from, to, { overwrite: false })
+}
+
+export const batchMoveIntoFolder = async (
+  serverId: string,
+  fromPaths: string[],
+  targetFolderPath: string
+): Promise<void> => {
+  const conn = getConnectionSecret(serverId)
+  if (!conn) throw new Error('连接不存在')
+  const client = createClient(conn.serverUrl, {
+    username: conn.username,
+    password: conn.password
+  }) as unknown as WebDavClientCompat
+
+  const target = cleanPath(targetFolderPath)
+  for (const fromPath of fromPaths) {
+    const from = joinRemote(conn.basePath, fromPath)
+    const name = entryName(fromPath)
+    const to = joinRemote(conn.basePath, pathPosix.join(target, name))
+    await client.moveFile(from, to, { overwrite: false })
+  }
+}
+
+export const batchCopyIntoFolder = async (
+  serverId: string,
+  fromPaths: string[],
+  targetFolderPath: string
+): Promise<void> => {
+  const conn = getConnectionSecret(serverId)
+  if (!conn) throw new Error('连接不存在')
+  const client = createClient(conn.serverUrl, {
+    username: conn.username,
+    password: conn.password
+  }) as unknown as WebDavClientCompat
+
+  const target = cleanPath(targetFolderPath)
+  for (const fromPath of fromPaths) {
+    const from = joinRemote(conn.basePath, fromPath)
+    const name = entryName(fromPath)
+    const to = joinRemote(conn.basePath, pathPosix.join(target, name))
+
+    if (typeof client.copyFile === 'function') {
+      await client.copyFile(from, to, { overwrite: false })
+      continue
+    }
+
+    const rs = (await client.createReadStream(from)) as unknown as Readable
+    await client.putFileContents(to, rs, { overwrite: false })
+  }
+}
+
+export const createFolder = async (
+  serverId: string,
+  parentPath: string,
+  folderName: string
+): Promise<void> => {
+  const conn = getConnectionSecret(serverId)
+  if (!conn) throw new Error('连接不存在')
+
+  const name = folderName.trim()
+  if (!name) throw new Error('目录名不能为空')
+  if (name.includes('/')) throw new Error('目录名不能包含 /')
+
+  const client = createClient(conn.serverUrl, {
+    username: conn.username,
+    password: conn.password
+  }) as unknown as WebDavClientCompat
+
+  const remote = joinRemote(conn.basePath, pathPosix.join(cleanPath(parentPath), name))
+  const exists = await client.exists(remote)
+  if (exists) throw new Error('目录已存在')
+  await client.createDirectory(remote)
 }
 
 export const ensureRemoteDir = async (serverId: string, dir: string): Promise<void> => {

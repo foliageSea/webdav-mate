@@ -1,5 +1,7 @@
 import { ElectronAPI } from '@electron-toolkit/preload'
 import type {
+  BatchRemoteActionInput,
+  CreateFolderInput,
   EnqueueDownloadInput,
   EnqueueUploadInput,
   RemoteEntry,
@@ -26,6 +28,9 @@ type RendererApi = {
     list(serverId: string, path: string): Promise<RemoteEntry[]>
     delete(serverId: string, path: string): Promise<void>
     moveInto(serverId: string, fromPath: string, targetFolderPath: string): Promise<void>
+    batchMoveInto(input: BatchRemoteActionInput): Promise<void>
+    batchCopyInto(input: BatchRemoteActionInput): Promise<void>
+    createFolder(input: CreateFolderInput): Promise<void>
   }
   transfers: {
     list(): Promise<TransferTask[]>

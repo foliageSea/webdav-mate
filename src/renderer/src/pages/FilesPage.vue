@@ -2,7 +2,17 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Add, ArrowUp, Download, Renew, TrashCan, Upload } from '@vicons/carbon'
-import { NButton, NCard, NDivider, NIcon, NScrollbar, NSelect, useMessage } from 'naive-ui'
+import {
+  NButton,
+  NCard,
+  NDivider,
+  NIcon,
+  NInput,
+  NModal,
+  NScrollbar,
+  NTreeSelect,
+  useMessage
+} from 'naive-ui'
 import type { RemoteEntry, WebDavConnection } from '@shared/ipc'
 import FileGrid from '../components/FileGrid.vue'
 import MediaPreview from '../components/MediaPreview.vue'
@@ -22,7 +32,19 @@ const selected = ref<Set<string>>(new Set())
 const showPreview = ref(false)
 const previewPath = ref<string | null>(null)
 
-const serverOptions = computed(() => connections.value.map((c) => ({ label: c.name, value: c.id })))
+const showBatchModal = ref(false)
+const batchTargetPath = ref('/')
+const batchTreeLoading = ref(false)
+type FolderTreeOption = {
+  label: string
+  key: string
+  value: string
+  children?: FolderTreeOption[]
+  isLeaf?: boolean
+}
+const batchFolderOptions = ref<FolderTreeOption[]>([])
+const showCreateFolderModal = ref(false)
+const newFolderName = ref('')
 
 const currentName = computed(() => {
   const c = connections.value.find((x) => x.id === serverId.value)
@@ -158,6 +180,113 @@ const deleteSelected = async (): Promise<void> => {
   selected.value = new Set()
   await refresh()
   message.success('已删除')
+}
+
+const openBatchModal = (): void => {
+  if (!serverId.value || selected.value.size === 0) return
+  batchTargetPath.value = path.value
+  showBatchModal.value = true
+  void loadBatchFolderTree()
+}
+
+const listFolderNodes = async (folderPath: string): Promise<FolderTreeOption[]> => {
+  if (!serverId.value) return []
+  const list = await window.api.files.list(serverId.value, folderPath)
+  return list
+    .filter((entry) => entry.kind === 'folder')
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .map((folder) => ({
+      label: folder.name,
+      key: folder.path,
+      value: folder.path,
+      isLeaf: false
+    }))
+}
+
+const loadBatchFolderTree = async (): Promise<void> => {
+  if (!serverId.value) return
+  batchTreeLoading.value = true
+  try {
+    const rootChildren = await listFolderNodes('/')
+    batchFolderOptions.value = [
+      {
+        label: '根目录',
+        key: '/',
+        value: '/',
+        children: rootChildren,
+        isLeaf: rootChildren.length === 0
+      }
+    ]
+  } catch (e) {
+    batchFolderOptions.value = []
+    message.error(`目录树加载失败：${String(e)}`)
+  } finally {
+    batchTreeLoading.value = false
+  }
+}
+
+const onBatchTreeLoad = async (option: any): Promise<void> => {
+  if (!serverId.value) return
+  if (option.children !== undefined) return
+  if (typeof option.key !== 'string') return
+
+  const children = await listFolderNodes(option.key)
+  option.children = children
+  if (children.length === 0) {
+    ;(option as FolderTreeOption).isLeaf = true
+  }
+  batchFolderOptions.value = [...batchFolderOptions.value]
+}
+
+const runBatchAction = async (mode: 'copy' | 'move'): Promise<void> => {
+  if (!serverId.value) return
+  const fromPaths = [...selected.value]
+  if (!fromPaths.length) return
+  const targetFolderPath = (batchTargetPath.value || '/').trim() || '/'
+
+  if (mode === 'copy') {
+    await window.api.files.batchCopyInto({
+      serverId: serverId.value,
+      fromPaths,
+      targetFolderPath
+    })
+    message.success('批量复制已完成')
+  } else {
+    await window.api.files.batchMoveInto({
+      serverId: serverId.value,
+      fromPaths,
+      targetFolderPath
+    })
+    message.success('批量移动已完成')
+  }
+
+  showBatchModal.value = false
+  selected.value = new Set()
+  await refresh()
+}
+
+const openCreateFolderModal = (): void => {
+  if (!serverId.value) return
+  newFolderName.value = ''
+  showCreateFolderModal.value = true
+}
+
+const createFolderInCurrentPath = async (): Promise<void> => {
+  if (!serverId.value) return
+  const folderName = newFolderName.value.trim()
+  if (!folderName) {
+    message.warning('请输入目录名称')
+    return
+  }
+
+  await window.api.files.createFolder({
+    serverId: serverId.value,
+    parentPath: path.value,
+    folderName
+  })
+  showCreateFolderModal.value = false
+  message.success('目录已创建')
+  await refresh()
 }
 
 const onExternalDrop = async (pathsDropped: string[]): Promise<void> => {
@@ -310,6 +439,15 @@ onMounted(async () => {
               </template>
               上传文件夹
             </NButton>
+            <NButton
+              class="flex-1 min-w-[112px] sm:flex-none"
+              size="small"
+              secondary
+              :disabled="!serverId"
+              @click="openCreateFolderModal"
+            >
+              新建目录
+            </NButton>
 
             <NButton
               class="flex-1 min-w-[112px] sm:flex-none"
@@ -324,6 +462,15 @@ onMounted(async () => {
                 </NIcon>
               </template>
               下载所选
+            </NButton>
+            <NButton
+              class="flex-1 min-w-[112px] sm:flex-none"
+              size="small"
+              secondary
+              :disabled="!serverId || selected.size === 0"
+              @click="openBatchModal"
+            >
+              批量复制/移动
             </NButton>
             <NButton
               class="flex-1 min-w-[112px] sm:flex-none"
@@ -389,5 +536,45 @@ onMounted(async () => {
       :entries="entries"
       @navigate="(p) => (previewPath = p)"
     />
+
+    <NModal v-model:show="showBatchModal" preset="card" style="width: 520px" title="批量复制/移动">
+      <div class="text-[13px] text-white/70 mb-3">已选 {{ selected.size }} 项，选择目标目录。</div>
+      <NTreeSelect
+        v-model:value="batchTargetPath"
+        :options="batchFolderOptions"
+        :loading="batchTreeLoading"
+        :on-load="onBatchTreeLoad"
+        filterable
+        placeholder="请选择目标目录"
+      />
+      <div class="mt-3 text-[12px] text-white/55">支持复制与移动到同一连接下的目标目录。</div>
+      <template #footer>
+        <div class="flex items-center justify-end gap-2">
+          <NButton secondary @click="showBatchModal = false">取消</NButton>
+          <NButton secondary type="info" @click="runBatchAction('copy')">批量复制</NButton>
+          <NButton secondary type="primary" @click="runBatchAction('move')">批量移动</NButton>
+        </div>
+      </template>
+    </NModal>
+
+    <NModal
+      v-model:show="showCreateFolderModal"
+      preset="card"
+      style="width: 460px"
+      title="新建目录"
+    >
+      <div class="text-[13px] text-white/70 mb-3">将在当前路径 {{ path }} 下创建目录。</div>
+      <NInput
+        v-model:value="newFolderName"
+        placeholder="请输入目录名称"
+        @keyup.enter="createFolderInCurrentPath"
+      />
+      <template #footer>
+        <div class="flex items-center justify-end gap-2">
+          <NButton secondary @click="showCreateFolderModal = false">取消</NButton>
+          <NButton secondary type="primary" @click="createFolderInCurrentPath">创建</NButton>
+        </div>
+      </template>
+    </NModal>
   </div>
 </template>
