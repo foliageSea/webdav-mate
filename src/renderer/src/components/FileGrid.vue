@@ -92,7 +92,7 @@ const onDoubleClick = (entry: RemoteEntry): void => emit('activate', entry)
     @dragleave.prevent="onDragLeave"
     @drop.prevent="onDrop"
   >
-    <div class="h-full overflow-auto p-2">
+    <div class="file-grid-scrollbar h-full overflow-auto p-2">
       <div class="grid gap-3" style="grid-template-columns: repeat(auto-fill, minmax(160px, 1fr))">
         <div
           v-for="entry in sorted"
@@ -156,3 +156,37 @@ const onDoubleClick = (entry: RemoteEntry): void => emit('activate', entry)
     </div>
   </div>
 </template>
+
+<style scoped>
+.file-grid-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(59, 130, 246, 0.52) rgba(255, 255, 255, 0.04);
+}
+
+.file-grid-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.file-grid-scrollbar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 999px;
+}
+
+.file-grid-scrollbar::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(125, 211, 252, 0.42), rgba(59, 130, 246, 0.5));
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.file-grid-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(125, 211, 252, 0.58), rgba(59, 130, 246, 0.7));
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.14),
+    0 4px 12px rgba(37, 99, 235, 0.2);
+}
+
+.file-grid-scrollbar::-webkit-scrollbar-corner {
+  background: transparent;
+}
+</style>

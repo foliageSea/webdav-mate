@@ -227,15 +227,16 @@ const goNext = (): void => {
     :show="show"
     preset="dialog"
     :mask-closable="false"
+    class="media-preview-modal"
     @update:show="(v) => emit('update:show', v)"
-    style="width: 840px"
+    style="width: calc(100vw - 24px); max-width: none"
   >
     <template #header>
       {{ current?.name ?? '预览' }}
     </template>
     <div
       class="w-full h-full flex flex-col overflow-hidden"
-      style="width: 100%; height: 540px; max-height: calc(100vh - 32px)"
+      style="width: 100%; height: calc(100vh - 88px); max-height: none"
     >
       <div class="flex items-start justify-between gap-3">
         <div class="min-w-0">
@@ -303,6 +304,17 @@ const goNext = (): void => {
 </template>
 
 <style scoped>
+:deep(.media-preview-modal .n-card) {
+  width: calc(100vw - 24px);
+  max-width: none;
+  height: calc(100vh - 24px);
+  margin: 12px;
+}
+
+:deep(.media-preview-modal .n-card > .n-card__content) {
+  height: 100%;
+}
+
 :deep(.xgplayer) {
   width: 100% !important;
   height: 100% !important;
