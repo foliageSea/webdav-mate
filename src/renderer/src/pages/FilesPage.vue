@@ -2,17 +2,7 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Add, ArrowUp, Download, Renew, TrashCan, Upload } from '@vicons/carbon'
-import {
-  NButton,
-  NCard,
-  NDivider,
-  NIcon,
-  NInput,
-  NModal,
-  NScrollbar,
-  NTreeSelect,
-  useMessage
-} from 'naive-ui'
+import { NButton, NCard, NDivider, NIcon, NInput, NModal, NTreeSelect, useMessage } from 'naive-ui'
 import type { RemoteEntry, WebDavConnection } from '@shared/ipc'
 import FileGrid from '../components/FileGrid.vue'
 import MediaPreview from '../components/MediaPreview.vue'
@@ -377,11 +367,11 @@ onMounted(async () => {
             </div>
           </div>
         </div>
-        <div class="flex w-full flex-col gap-2 sm:w-auto sm:items-end mt-2">
+        <div class="mt-2 flex w-full flex-col gap-2 items-start">
           <!-- <NSelect class="w-full sm:w-[260px]" size="small" :options="serverOptions" :value="serverId"
             @update:value="(v) => (serverId = v)" /> -->
 
-          <div class="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:justify-end">
+          <div class="flex w-full flex-wrap items-center gap-2 justify-start">
             <NButton
               class="flex-1 min-w-[112px] sm:flex-none"
               size="small"
@@ -500,7 +490,7 @@ onMounted(async () => {
           :bordered="true"
           content-style="height: 100%"
         >
-          <NScrollbar class="h-full">
+          <div class="h-full">
             <div v-if="!serverId" class="h-full flex items-center justify-center">
               <div class="text-center">
                 <div class="text-[13px] text-white/70">请先在“连接管理”新增一个连接</div>
@@ -524,7 +514,7 @@ onMounted(async () => {
               @move-into-folder="onMoveIntoFolder"
               @update:selected="(s) => (selected = s)"
             />
-          </NScrollbar>
+          </div>
         </NCard>
       </div>
     </div>
